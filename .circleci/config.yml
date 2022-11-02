@@ -44,7 +44,7 @@ workflows:
   test_docker_deploy:
     jobs:
       - build_and_test
-      - build_docker_image
+      - build_docker_image:
           requires:
             - build_and_test
           filters:
