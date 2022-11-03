@@ -67,14 +67,14 @@ workflows:
       - build_and_push_docker_image
       - run_test:
           requires:
-            - build_docker_image
+            - build_and_push_docker_image
           filters:
             branches:
               only:
                 - master
       - ensure_quality:
           requires:
-            - build_docker_image
+            - build_and_push_docker_image
           filters:
             branches:
               only:
