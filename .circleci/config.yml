@@ -35,11 +35,12 @@ jobs:
       - run:
           name: Build and Push docker image
           command: |
-            docker build -t $DOCKER_USERNAME/$DOCKER_HUB_PROJECT:$CIRCLE_SHA1 .
-            docker build -t $DOCKER_USERNAME/$DOCKER_HUB_PROJECT:latest .
-            echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
-            docker push $DOCKER_USERNAME/$DOCKER_HUB_PROJECT:$CIRCLE_SHA1
-            docker push $DOCKER_USERNAME/$DOCKER_HUB_PROJECT:latest
+            TAG=$CIRCLE_SHA1
+            docker build -t "$DOCKER_USERNAME"/"$DOCKER_HUB_PROJECT":"$TAG" .
+            docker build -t "$DOCKER_USERNAME"/"$DOCKER_HUB_PROJECT":latest .
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            docker push "$DOCKER_USERNAME"/"$DOCKER_HUB_PROJECT":"$TAG"
+            docker push "$DOCKER_USERNAME"/"$DOCKER_HUB_PROJECT":latest
 
   run_test:
     docker:
