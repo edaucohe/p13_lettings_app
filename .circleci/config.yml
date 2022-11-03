@@ -36,12 +36,11 @@ jobs:
           name: Build and Push docker image
           command: |
             TAG=$CIRCLE_SHA1
-            docker build -t $DOCKER_USERNAME/lettings:$TAG .
-            docker build -t $DOCKER_USERNAME/lettings:latest .
+            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG .
+            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:latest .
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-            docker tag $DOCKER_USERNAME/lettings:$CIRCLE_SHA1 $DOCKER_USERNAME/lettings:latest
-            docker push $DOCKER_USERNAME/lettings:$TAG
-            docker push $DOCKER_USERNAME/lettings:latest
+            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG
+            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:latest
 
   run_test:
     docker:
@@ -51,7 +50,7 @@ jobs:
       - run:
           name: pytest
           command: |
-            docker run lettings/$CIRCLE_SHA1 pytest
+            docker run $DOCKER_REPOSITORY/$CIRCLE_SHA1 pytest
 
   ensure_quality:
     docker:
@@ -61,7 +60,7 @@ jobs:
       - run:
           name: flake8
           command: |
-            docker run lettings/$CIRCLE_SHA1 flake8
+            docker run $DOCKER_REPOSITORY/$CIRCLE_SHA1 flake8
 
 workflows:
   default:
