@@ -21,30 +21,52 @@ jobs:
           paths:
             - .
 
-  build_docker_image:
+  build_and_push_docker_image:
     docker:
       - image: cimg/python:3.9.4
         auth:
-          username: edaucohe
+          username: $DOCKER_USERNAME
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.18
+          version: 20.10.14
           docker_layer_caching: true
       - run:
           name: Build and Push docker image
           command: |
-            TAG=0.1.$CIRCLE_BUILD_NUM
-            docker build -t edaucohe/lettings:latest .
-            echo $DOCKER_PASS | docker login -u edaucohe --password-stdin
-            docker push edaucohe/lettings:latest
+            TAG=$CIRCLE_SHA1
+            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG .
+            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:latest .
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG
+            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:latest
+
+  run_test:
+    docker:
+      - image: cimg/python:3.9.4
+    steps:
+      - checkout
+      - run:
+          name: pytest
+          command: |
+            docker run lettings/$CIRCLE_SHA1 pytest
+
+  ensure_quality:
+    docker:
+      - image: cimg/python:3.9.4
+    steps:
+      - checkout
+      - run:
+          name: flake8
+          command: |
+            docker run lettings/$CIRCLE_SHA1 flake8
 
 workflows:
-  test_docker_deploy:
+  default:
     jobs:
       - build_and_test
-      - build_docker_image:
+      - build_and_push_docker_image:
           requires:
             - build_and_test
           filters:
