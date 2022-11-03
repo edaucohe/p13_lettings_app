@@ -65,17 +65,10 @@ jobs:
 workflows:
   default:
     jobs:
-      - build_and_push_docker_image
-      - run_test:
+      - build-and-test
+      - build_and_push_docker_image:
           requires:
-            - build_and_push_docker_image
-          filters:
-            branches:
-              only:
-                - master
-      - ensure_quality:
-          requires:
-            - build_and_push_docker_image
+            - build-and-test
           filters:
             branches:
               only:
