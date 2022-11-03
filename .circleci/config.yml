@@ -42,6 +42,8 @@ jobs:
             docker push $DOCKER_USERNAME/$DOCKER_HUB_PROJECT:latest
 
   run_test:
+    docker:
+      - image: cimg/python:3.9.4
     steps:
       - checkout
       - run:
@@ -50,6 +52,8 @@ jobs:
             docker run lettings/$CIRCLE_SHA1 pytest
 
   ensure_quality:
+    docker:
+      - image: cimg/python:3.9.4
     steps:
       - checkout
       - run:
