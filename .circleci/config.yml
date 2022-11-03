@@ -36,12 +36,11 @@ jobs:
           name: Build and Push docker image
           command: |
             TAG=$CIRCLE_SHA1
-            IMAGE="lettings"
-            docker build -t "$DOCKER_USERNAME"/$IMAGE:"$TAG" .
-            docker build -t "$DOCKER_USERNAME"/$IMAGE:latest .
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker push "$DOCKER_USERNAME"/$IMAGE:"$TAG"
-            docker push "$DOCKER_USERNAME"/$IMAGE:latest
+            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG .
+            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:latest .
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG
+            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:latest
 
   run_test:
     docker:
