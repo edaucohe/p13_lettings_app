@@ -36,11 +36,12 @@ jobs:
           name: Build and Push docker image
           command: |
             TAG=$CIRCLE_SHA1
-            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG .
-            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:latest .
+            docker build -t $DOCKER_USERNAME/lettings:$TAG .
+            docker build -t $DOCKER_USERNAME/lettings:latest .
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG
-            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:latest
+            docker tag $DOCKER_USERNAME/lettings:$CIRCLE_SHA1 $DOCKER_USERNAME/lettings:latest
+            docker push $DOCKER_USERNAME/lettings:$TAG
+            docker push $DOCKER_USERNAME/lettings:latest
 
   run_test:
     docker:
@@ -65,10 +66,17 @@ jobs:
 workflows:
   default:
     jobs:
-      - build_and_test
-      - build_and_push_docker_image:
+      - build_and_push_docker_image
+      - run_test:
           requires:
-            - build_and_test
+            - build_and_push_docker_image
+          filters:
+            branches:
+              only:
+                - master
+      - ensure_quality:
+          requires:
+            - build_and_push_docker_image
           filters:
             branches:
               only:
