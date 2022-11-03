@@ -37,11 +37,11 @@ jobs:
           command: |
             TAG=$CIRCLE_SHA1
             IMAGE="lettings"
-            docker build -t "$DOCKER_USERNAME"/IMAGE:"$TAG" .
-            docker build -t "$DOCKER_USERNAME"/IMAGE:latest .
+            docker build -t "$DOCKER_USERNAME"/$IMAGE:"$TAG" .
+            docker build -t "$DOCKER_USERNAME"/$IMAGE:latest .
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker push "$DOCKER_USERNAME"/IMAGE:"$TAG"
-            docker push "$DOCKER_USERNAME"/IMAGE:latest
+            docker push "$DOCKER_USERNAME"/$IMAGE:"$TAG"
+            docker push "$DOCKER_USERNAME"/$IMAGE:latest
 
   run_test:
     docker:
