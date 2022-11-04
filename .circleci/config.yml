@@ -25,8 +25,8 @@ jobs:
     docker:
       - image: cimg/python:3.9.4
         auth:
-          username: edaucohe
-          password: $DOCKERHUB_PASSWORD
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
     steps:
       - checkout
       - setup_remote_docker:
@@ -36,9 +36,9 @@ jobs:
           name: Build and Push docker image
           command: |
             TAG=$CIRCLE_SHA1
-            docker build -t edaucohe/lettings:$TAG .
-            echo $DOCKERHUB_PASSWORD | docker login -u edaucohe --password-stdin
-            docker push edaucohe/lettings:$TAG
+            docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG .
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG
 
   run_test:
     docker:
