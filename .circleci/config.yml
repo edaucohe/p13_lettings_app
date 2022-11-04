@@ -48,7 +48,7 @@ jobs:
       - run:
           name: pytest
           command: |
-            docker run $DOCKER_REPOSITORY/$CIRCLE_SHA1 pytest
+            docker run $DOCKER_REPOSITORY:$CIRCLE_SHA1 pytest
 
   ensure_quality:
     docker:
@@ -58,7 +58,7 @@ jobs:
       - run:
           name: flake8
           command: |
-            docker run $DOCKER_REPOSITORY/$CIRCLE_SHA1 flake8
+            docker run $DOCKER_REPOSITORY:$CIRCLE_SHA1 flake8
 
 workflows:
   default:
