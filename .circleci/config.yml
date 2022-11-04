@@ -21,7 +21,7 @@ jobs:
           paths:
             - .
 
-  build_and_push_docker_image:
+  build_push_docker_test_lint:
     docker:
       - image: cimg/python:3.9.4
         auth:
@@ -39,6 +39,14 @@ jobs:
             docker build -t $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG .
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
             docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG
+      - run:
+          name: Run test
+          command: |
+            docker run $DOCKER_REPOSITORY:$CIRCLE_SHA1 pytest
+      - run:
+          name: Ensure quality
+          command: |
+            docker run $DOCKER_REPOSITORY:$CIRCLE_SHA1 flake8
 
   run_test:
     docker:
@@ -63,17 +71,7 @@ jobs:
 workflows:
   default:
     jobs:
-      - build_and_push_docker_image
-      - run_test:
-          requires:
-            - build_and_push_docker_image
-          filters:
-            branches:
-              only:
-                - master
-      - ensure_quality:
-          requires:
-            - build_and_push_docker_image
+      - build_push_docker_test_lint:
           filters:
             branches:
               only:
