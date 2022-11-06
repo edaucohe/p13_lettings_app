@@ -40,25 +40,18 @@ jobs:
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
             docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:$TAG
 
-  run_test:
-    docker:
-      - image: cimg/python:3.9.4
+  deploy_heroku:
+    machine: true
     steps:
       - checkout
       - run:
-          name: pytest
+          name: Log and push to Heroku
           command: |
-            docker run $DOCKER_REPOSITORY:$CIRCLE_SHA1 pytest
-
-  ensure_quality:
-    docker:
-      - image: cimg/python:3.9.4
-    steps:
-      - checkout
-      - run:
-          name: flake8
-          command: |
-            docker run $DOCKER_REPOSITORY:$CIRCLE_SHA1 flake8
+            set -x
+            sudo curl https://cli-assets.heroku.com/install.sh | sh
+            HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:login
+            HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:push -a $HEROKU_APP_NAME web
+            HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:release -a $HEROKU_APP_NAME web
 
 workflows:
   default:
@@ -67,6 +60,13 @@ workflows:
       - build_and_push_docker_image:
           requires:
             - build_and_test
+          filters:
+            branches:
+              only:
+                - master
+      - deploy_heroku:
+          requires:
+            - build_and_push_docker_image
           filters:
             branches:
               only:
