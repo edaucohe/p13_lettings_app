@@ -17,7 +17,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Expose port 8000 for access from other applications
-EXPOSE 8000
+EXPOSE $PORT
 
 # Set the executable commands in the container
 CMD ["python", "manage.py", "runserver", "0.0.0.0:$PORT"]
