@@ -20,4 +20,4 @@ RUN pip install -r requirements.txt
 # EXPOSE $PORT
 
 # Set the executable commands in the container
-CMD ["python", "manage.py", "runserver", "0.0.0.0:$PORT"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:${PORT##\\}"]
