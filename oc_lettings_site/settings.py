@@ -66,7 +66,10 @@ WHITENOISE_ENABLED = parse_bool(os.getenv('WHITENOISE_ENABLED'))
 if WHITENOISE_ENABLED:
     MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+    # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    WHITENOISE_USE_FINDERS = True
+    WHITENOISE_MANIFEST_STRICT = False
+    WHITENOISE_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'oc_lettings_site.urls'
 
