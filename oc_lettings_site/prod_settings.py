@@ -5,6 +5,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 DEBUG = False
 
 MIDDLEWARE += ['whitenoise.middleware.WhiteNoiseMiddleware']
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ALLOWED_HOSTS = ['oc-lettings-edaucohe.herokuapp.com']
