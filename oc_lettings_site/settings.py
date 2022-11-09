@@ -1,36 +1,41 @@
 import os
+from typing import List, Optional
 
-from django.core.exceptions import ImproperlyConfigured
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
-
-def get_env_var(prod_secret_key, local_secret_key=None):
-    try:
-        return os.environ[prod_secret_key]
-    except KeyError:
-        if local_secret_key is None:
-            error_message = f"Set the {prod_secret_key} environment variable"
-            raise ImproperlyConfigured(error_message)
-        else:
-            return local_secret_key
-
+ENV = os.getenv('ENV', 'dev')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_env_var('SECRET_KEY', 'fp$9^593hsriajg$_%=5trot9g!1qa@ew(o-1#@=&4%=hp46(s')
+SECRET_KEY = os.getenv('SECRET_KEY', 'fp$9^593hsriajg$_%=5trot9g!1qa@ew(o-1#@=&4%=hp46(s')
+
 
 # PORT = os.getenv("PORT", default="8000")
 
+def parse_bool(value: Optional[str]) -> bool:
+    if value is not None and value.lower() == 'true':
+        return True
+    else:
+        return False
+
+
+def parse_array(value: Optional[str]) -> List[str]:
+    array = []
+    if value is not None and len(value) > 0:
+        array = value.split(',')
+    return array
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = parse_bool(os.getenv('DEBUG'))
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = parse_array(os.getenv('ALLOWED_HOSTS'))
 
 # Application definition
 
@@ -57,6 +62,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+WHITENOISE_ENABLED = parse_bool(os.getenv('WHITENOISE_ENABLED'))
+if WHITENOISE_ENABLED:
+    MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 ROOT_URLCONF = 'oc_lettings_site.urls'
 
 TEMPLATES = [
@@ -77,7 +88,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'oc_lettings_site.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -87,7 +97,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'oc-lettings-site.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -107,7 +116,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -121,8 +129,25 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+SENTRY_DSN = os.getenv('SENTRY_DSN')
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(),
+        ],
+
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0,
+
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True
+    )
