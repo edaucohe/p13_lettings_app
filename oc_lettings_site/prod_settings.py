@@ -10,7 +10,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 ALLOWED_HOSTS = ['oc-lettings-edaucohe.herokuapp.com']
 
 sentry_sdk.init(
-    dsn="https://49da25c999164788aabe940edfc65cf5@o4504124745711616.ingest.sentry.io/4504124749971456",
+    dsn=
+    "https://49da25c999164788aabe940edfc65cf5@o4504124745711616.ingest.sentry.io/4504124749971456",
     integrations=[
         DjangoIntegration(),
     ],
