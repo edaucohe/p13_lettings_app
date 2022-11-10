@@ -75,3 +75,114 @@ Utilisation de PowerShell, comme ci-dessus sauf :
 
 - Pour activer l'environnement virtuel, `.\venv\Scripts\Activate.ps1` 
 - Remplacer `which <my-command>` par `(Get-Command <my-command>).Path`
+
+## Déploiement
+### Prérequis
+- Compte GitHub,
+- Compte CircleCI,
+- Compte DockerHub,
+- Compte Heroku,
+- Compte Sentry.
+
+### Description
+Le travail de déploiement consiste en la mise en place de l'Intégration continue/Déploiement continu 
+(CI/CD), étant celle-ci composée de 4 étapes :
+- Mise en place de tests via Pytest et Flake8,
+- Conteneurisation de l'image Docker,
+- Déploiement sur Heroku et
+- Surveillance via Sentry
+
+### Workflow
+Cette CI/CD est mise en place grâce au CircleCI et à la création du fichier `config.yml`, 
+dont le workflow est :
+```
+workflows:
+  default:
+    jobs:
+      - build_and_test
+      - build_and_push_docker_image:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only:
+                - master
+      - deploy_heroku:
+          requires:
+            - build_and_push_docker_image
+          filters:
+            branches:
+              only:
+                - master
+```
+Ce workflow entraîne :
+- l'exécution des tests qui se fait lors de la modification de n'importe quelle branche,
+- la création de l'image Docker qui se fait uniquement lors de la modification de la branche master et si 
+et seulement si les tests sont validés,
+- le déploiement de l'application sur Heroku qui se fait uniquement lors de la modification de la branche 
+master et si et seulement si l'image Docker a été bien créée.
+
+### Variables d'environnement
+Vu que l'application sera mise en production, il faut déclarer des variables d'environnement afin de 
+la sécuriser. 
+
+Les **variables d'environnement dans CircleCI** sont :
+
+| #   |      Variable      | Type de variable |              Description               |
+|-----|:------------------:|:----------------:|:--------------------------------------:|
+| 1   |  DOCKER_USERNAME   |      string      | Nom d'utilisateur dans le dépôt Docker |
+| 2   | DOCKER_REPOSITORY  |      string      |          Nom du dépôt Docker           |
+| 3   |  DOCKER_PASSWORD   |      string      |     Mot de passe du compte Docker      |
+| 4   |   HEROKU_API_KEY   |      string      |        Clé API du compte Heroku        |
+| 5   |  HEROKU_APP_NAME   |      string      |    Nom de l'application dans Heroku    |
+
+Les **variables d'environnement dans Heroku** sont :
+
+| #   |        Variable        | Type de variable |               Description                |
+|-----|:----------------------:|:----------------:|:----------------------------------------:|
+| 1   | DJANGO_SETTINGS_MODULE |      string      |      Module de configuration Django      |
+| 2   |     ALLOWED_HOSTS      |   List(string)   |       Nom de l'application Heroku        |
+| 3   |       SECRET_KEY       |      string      |            Clé secrète Django            |
+| 4   |   WHITENOISE_ENABLED   |     boolean      | État du Whitenoise (True en production)  |
+| 5   |       SENTRY_DSN       |      string      |                DSN Sentry                |
+
+**Nota :** Pour générer une clé secrète Django, on peut passer par un générateur en ligne 
+(Voir [Helpful links](#links))
+
+## Utilisation en local
+Si jamais on veut lancer l'application en local (une fois bien cloné), il faut ouvrir le fichier 
+`settings.py` et remplacer :
+
+`DEBUG = parse_bool(os.getenv('DEBUG'))`
+
+Par : 
+
+`DEBUG = parse_bool(os.getenv('DEBUG', 'True'))`
+
+Ensuite, il faut s'assurer de déclarer la variable `DEBUG = False` dans Heroku.
+
+Après, il faut ouvrir le terminal, se placer dans le dossier `../Python-OC-Lettings-FR` et taper la 
+commande `python manage.py runserver`.
+
+Finalement, il faut s'adresser au lien : `http://localhost:8000/` pour visualiser l'application en local.
+
+Pour arrêter le serveur, il faut taper `ctrl + c` dans le terminal.
+
+## Helpful links <a class="anchor" id="links"></a>
+Dépôt Github original : https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR
+
+Site web déployé sur Heroku : https://oc-lettings-edaucohe.herokuapp.com/
+
+Documentation Django : https://docs.djangoproject.com/en/4.1/
+
+Documentation Docker : https://docs.docker.com/
+
+Documentation CircleCI : https://circleci.com/docs/
+
+Documentation Heroku : https://devcenter.heroku.com/categories/reference
+
+Documentation Sentry : https://docs.sentry.io/
+
+Documentation Whitenoise : http://whitenoise.evans.io/en/stable/index.html 
+
+Générateur en ligne de clés secrètes Django : https://miniwebtool.com/django-secret-key-generator/
